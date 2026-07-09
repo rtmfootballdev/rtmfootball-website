@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, MessageCircle, Sparkles, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { JerseyImage } from "@/components/jersey/jersey-image";
 import { ProductGrid } from "@/components/product/product-grid";
 import { TrustBadges } from "@/components/marketing/trust-badges";
 import { Reveal } from "@/components/motion/reveal";
+import { HeroSection } from "@/components/home/hero-section";
+import { JerseyImage } from "@/components/jersey/jersey-image";
 import { listJerseys } from "@/lib/data/inventory";
-import { BRAND_SLOGAN, DELIVERY_MESSAGE, INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/constants";
+import { DELIVERY_MESSAGE } from "@/lib/constants";
 import type { FavoriteSlot, Jersey } from "@/lib/types";
 
 const CATEGORY_SHOWCASE: Array<{
@@ -71,70 +72,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-pitch text-pitch-foreground">
-        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-16 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:py-24">
-          <Reveal className="max-w-xl">
-            <span className="inline-flex items-center rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-medium tracking-wide text-gold">
-              Modern · Retro · National Team · Promotions
-            </span>
-            <h1 className="mt-5 font-heading text-4xl leading-[1.05] tracking-wide sm:text-5xl lg:text-6xl">
-              More than just a jersey,
-              <br />
-              it&apos;s a <span className="text-gold">passion in action</span>.
-            </h1>
-            <p className="mt-5 max-w-md text-base text-pitch-foreground/80">
-              {BRAND_SLOGAN}. Premium quality jerseys with true embroidery, official
-              labels and protected packaging — personalized with your name and number.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button
-                size="lg"
-                className="bg-gold text-gold-foreground hover:bg-gold/90"
-                nativeButton={false}
-                render={<Link href="/promotions" />}
-              >
-                Shop Promotions
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-pitch-foreground/30 bg-transparent text-pitch-foreground hover:bg-white/10"
-                nativeButton={false}
-                render={<Link href="/modern" />}
-              >
-                Explore Modern Kits
-              </Button>
-            </div>
-            <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-pitch-foreground/70 hover:text-gold"
-            >
-              Follow {INSTAGRAM_HANDLE} on Instagram <ArrowRight className="h-3.5 w-3.5" />
-            </a>
-          </Reveal>
-
-          <Reveal delay={0.1} className="grid w-full max-w-sm grid-cols-2 gap-4 lg:w-auto">
-            {jerseys.slice(0, 4).map((jersey, index) => (
-              <div
-                key={jersey.id}
-                className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
-                style={{ transform: index % 2 === 1 ? "translateY(1.5rem)" : undefined }}
-              >
-                <JerseyImage
-                  clube={jersey.clube}
-                  tipo={jersey.tipo}
-                  era={jersey.era}
-                  photoUrl={jersey.fotos[0]}
-                  className="aspect-square w-full"
-                />
-              </div>
-            ))}
-          </Reveal>
-        </div>
-      </section>
+      <HeroSection jerseys={jerseys} />
 
       {/* Category showcase */}
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-20">
