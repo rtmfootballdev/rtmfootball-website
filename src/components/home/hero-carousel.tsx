@@ -34,6 +34,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const { jersey, label } = slides[index];
   const price = basePrice(jersey);
   const discounted = hasDiscount(jersey);
+  const href = `/product/${jersey.id}`;
 
   function goPrev() {
     setIndex((i) => (i - 1 + count) % count);
@@ -57,104 +58,107 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
     touchStartX.current = null;
   }
 
+  function stopIfSwiped(e: React.MouseEvent) {
+    if (didSwipe.current) {
+      e.preventDefault();
+      didSwipe.current = false;
+    }
+  }
+
   return (
     <div
-      className="mx-auto w-full max-w-sm"
+      className="relative mx-auto w-full max-w-md pb-10"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="overflow-hidden rounded-3xl border border-white/10 bg-pitch-light/50 shadow-2xl backdrop-blur">
-        <div
-          className="group relative aspect-square"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={jersey.id}
-              initial={{ opacity: 0, scale: 1.03 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="absolute inset-0"
-            >
-              {discounted && (
-                <span className="absolute left-3 top-3 z-10 rounded-full bg-gold px-3 py-1 text-xs font-semibold text-gold-foreground">
-                  Promotion
-                </span>
-              )}
-              <Link
-                href={`/product/${jersey.id}`}
-                className="block h-full w-full"
-                onClick={(e) => {
-                  if (didSwipe.current) {
-                    e.preventDefault();
-                    didSwipe.current = false;
-                  }
-                }}
-              >
-                <JerseyImage
-                  clube={jersey.clube}
-                  tipo={jersey.tipo}
-                  era={jersey.era}
-                  photoUrl={jersey.fotos[0]}
-                  priority={index === 0}
-                  sizes="(max-width: 640px) 384px, 420px"
-                  className="h-full w-full"
-                />
-              </Link>
-            </motion.div>
-          </AnimatePresence>
+      <div aria-hidden className="absolute inset-6 -z-10 rounded-full bg-gold/10 blur-3xl" />
 
-          {count > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={goPrev}
-                aria-label="Previous jersey"
-                className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground opacity-100 shadow transition-opacity hover:bg-background sm:opacity-0 sm:group-hover:opacity-100"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                onClick={goNext}
-                aria-label="Next jersey"
-                className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground opacity-100 shadow transition-opacity hover:bg-background sm:opacity-0 sm:group-hover:opacity-100"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between gap-3 border-t border-white/10 px-5 py-4">
-          <div className="min-w-0">
-            <p className="truncate font-heading text-base tracking-wide text-pitch-foreground">
-              {jersey.clube} {jersey.ano}
-            </p>
-            <p className="text-xs text-pitch-foreground/60">
-              {jersey.tipo} · {label}
-            </p>
-          </div>
-          <div className="shrink-0 text-right">
+      <div
+        className="group relative aspect-square"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={jersey.id}
+            initial={{ opacity: 0, scale: 1.03 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="absolute inset-0"
+          >
             {discounted && (
-              <p className="text-xs text-pitch-foreground/50 line-through">{formatEUR(jersey.preco)}</p>
+              <span className="absolute left-4 top-4 z-10 rounded-full bg-gold px-3 py-1 text-xs font-semibold text-gold-foreground shadow">
+                Promotion
+              </span>
             )}
-            <p className="font-heading text-lg text-gold">{formatEUR(price)}</p>
-          </div>
-        </div>
+            <Link
+              href={href}
+              className="block h-full w-full overflow-hidden rounded-[2.5rem] drop-shadow-2xl"
+              onClick={stopIfSwiped}
+            >
+              <JerseyImage
+                clube={jersey.clube}
+                tipo={jersey.tipo}
+                era={jersey.era}
+                photoUrl={jersey.fotos[0]}
+                priority={index === 0}
+                sizes="(max-width: 640px) 384px, 420px"
+                className="h-full w-full"
+              />
+            </Link>
+          </motion.div>
+        </AnimatePresence>
 
-        <Link
-          href={`/product/${jersey.id}`}
-          className="flex items-center justify-center gap-1.5 border-t border-white/10 bg-white/5 py-3 text-sm font-medium text-pitch-foreground transition-colors hover:bg-white/10"
-        >
-          View Jersey <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
+        {count > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={goPrev}
+              aria-label="Previous jersey"
+              className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground opacity-100 shadow transition-opacity hover:bg-background sm:opacity-0 sm:group-hover:opacity-100"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              aria-label="Next jersey"
+              className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground opacity-100 shadow transition-opacity hover:bg-background sm:opacity-0 sm:group-hover:opacity-100"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </>
+        )}
       </div>
 
+      {/* Floating price tag — overlaps the image edge instead of stacking a separate panel */}
+      <Link
+        href={href}
+        onClick={stopIfSwiped}
+        className="absolute inset-x-6 -bottom-2 flex items-center justify-between gap-3 rounded-2xl bg-pitch-light/95 px-5 py-3.5 shadow-xl ring-1 ring-white/10 backdrop-blur transition-colors hover:bg-pitch-light"
+      >
+        <span className="min-w-0">
+          <span className="block truncate font-heading text-sm tracking-wide text-white">
+            {jersey.clube} {jersey.ano}
+          </span>
+          <span className="block text-[11px] text-pitch-foreground/60">
+            {jersey.tipo} · {label}
+          </span>
+        </span>
+        <span className="flex shrink-0 items-center gap-2">
+          {discounted && (
+            <span className="text-[11px] text-pitch-foreground/50 line-through">
+              {formatEUR(jersey.preco)}
+            </span>
+          )}
+          <span className="font-heading text-base text-gold">{formatEUR(price)}</span>
+          <ArrowRight className="h-3.5 w-3.5 text-gold" />
+        </span>
+      </Link>
+
       {count > 1 && (
-        <div className="mt-5 flex justify-center gap-2">
+        <div className="absolute inset-x-0 -bottom-10 flex justify-center gap-2">
           {slides.map((s, i) => (
             <button
               key={s.jersey.id}
