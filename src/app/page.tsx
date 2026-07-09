@@ -1,65 +1,218 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, MessageCircle, Sparkles, Truck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { JerseyImage } from "@/components/jersey/jersey-image";
+import { ProductGrid } from "@/components/product/product-grid";
+import { TrustBadges } from "@/components/marketing/trust-badges";
+import { Reveal } from "@/components/motion/reveal";
+import { listJerseys } from "@/lib/data/inventory";
+import { BRAND_SLOGAN, DELIVERY_MESSAGE, INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/constants";
+import type { Jersey } from "@/lib/types";
 
-export default function Home() {
+const CATEGORY_SHOWCASE: Array<{
+  href: string;
+  label: string;
+  description: string;
+  filter: (jersey: Jersey) => boolean;
+}> = [
+  {
+    href: "/modern",
+    label: "Modern",
+    description: "Current-season club and national kits.",
+    filter: (j) => j.era === "Atual",
+  },
+  {
+    href: "/retro",
+    label: "Retro",
+    description: "Legendary kits from years past.",
+    filter: (j) => j.era === "Retro",
+  },
+  {
+    href: "/national-team",
+    label: "National Team",
+    description: "Represent your country, home or away.",
+    filter: (j) => j.categoria === "Seleção",
+  },
+  {
+    href: "/promotions",
+    label: "Promotions",
+    description: "Limited-time prices on selected jerseys.",
+    filter: (j) => j.promocao,
+  },
+];
+
+const STEPS = [
+  {
+    icon: Sparkles,
+    title: "Browse & personalize",
+    description: "Pick your jersey and size, then add a name & number for just +€2.",
+  },
+  {
+    icon: MessageCircle,
+    title: "Contact to confirm",
+    description: "Send your order on WhatsApp — we confirm availability, usually within 24h.",
+  },
+  {
+    icon: Truck,
+    title: "Delivery in 6–18 days",
+    description: DELIVERY_MESSAGE,
+  },
+];
+
+export default async function HomePage() {
+  const jerseys = await listJerseys();
+  const promotions = jerseys.filter((j) => j.promocao).slice(0, 8);
+  const fallbackJersey = jerseys[0];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
+    <div>
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-pitch text-pitch-foreground">
+        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-16 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:py-24">
+          <Reveal className="max-w-xl">
+            <span className="inline-flex items-center rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-medium tracking-wide text-gold">
+              Modern · Retro · National Team · Promotions
+            </span>
+            <h1 className="mt-5 font-heading text-4xl leading-[1.05] tracking-wide sm:text-5xl lg:text-6xl">
+              More than just a jersey,
+              <br />
+              it&apos;s a <span className="text-gold">passion in action</span>.
+            </h1>
+            <p className="mt-5 max-w-md text-base text-pitch-foreground/80">
+              {BRAND_SLOGAN}. Premium quality jerseys with true embroidery, official
+              labels and protected packaging — personalized with your name and number.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Button
+                size="lg"
+                className="bg-gold text-gold-foreground hover:bg-gold/90"
+                nativeButton={false}
+                render={<Link href="/promotions" />}
+              >
+                Shop Promotions
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-pitch-foreground/30 bg-transparent text-pitch-foreground hover:bg-white/10"
+                nativeButton={false}
+                render={<Link href="/modern" />}
+              >
+                Explore Modern Kits
+              </Button>
+            </div>
             <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-pitch-foreground/70 hover:text-gold"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              Follow {INSTAGRAM_HANDLE} on Instagram <ArrowRight className="h-3.5 w-3.5" />
+            </a>
+          </Reveal>
+
+          <Reveal delay={0.1} className="grid w-full max-w-sm grid-cols-2 gap-4 lg:w-auto">
+            {jerseys.slice(0, 4).map((jersey, index) => (
+              <div
+                key={jersey.id}
+                className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+                style={{ transform: index % 2 === 1 ? "translateY(1.5rem)" : undefined }}
+              >
+                <JerseyImage jersey={jersey} className="aspect-square w-full" />
+              </div>
+            ))}
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Category showcase */}
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-20">
+        <Reveal>
+          <h2 className="font-heading text-2xl tracking-wide sm:text-3xl">Shop by category</h2>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+            From this season&apos;s kits to legendary retro classics and national team pride.
           </p>
+        </Reveal>
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {CATEGORY_SHOWCASE.map((category, index) => {
+            const representative = jerseys.find(category.filter) ?? fallbackJersey;
+            return (
+              <Reveal key={category.href} delay={index * 0.05}>
+                <Link
+                  href={category.href}
+                  className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl border border-border"
+                >
+                  {representative && (
+                    <JerseyImage
+                      jersey={representative}
+                      className="absolute inset-0 h-full w-full [&>svg]:transition-transform [&>svg]:duration-500 group-hover:[&>svg]:scale-110"
+                    />
+                  )}
+                  <div className="relative z-10 bg-gradient-to-t from-pitch/95 via-pitch/50 to-transparent p-5 pt-20 text-pitch-foreground">
+                    <p className="font-heading text-xl tracking-wide">{category.label}</p>
+                    <p className="mt-1 text-xs text-pitch-foreground/80">{category.description}</p>
+                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-gold">
+                      Shop now <ArrowRight className="h-3.5 w-3.5" />
+                    </span>
+                  </div>
+                </Link>
+              </Reveal>
+            );
+          })}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Trust strip */}
+      <section className="border-y border-border bg-secondary/40">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+          <Reveal>
+            <TrustBadges />
+          </Reveal>
         </div>
-      </main>
+      </section>
+
+      {/* How it works */}
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-20">
+        <Reveal>
+          <h2 className="font-heading text-2xl tracking-wide sm:text-3xl">How ordering works</h2>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+            No complicated checkout — just a quick chat to lock in your order.
+          </p>
+        </Reveal>
+        <div className="mt-8 grid gap-8 sm:grid-cols-3">
+          {STEPS.map((step, index) => (
+            <Reveal key={step.title} delay={index * 0.08} className="flex flex-col gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <step.icon className="h-5 w-5" />
+              </span>
+              <p className="font-heading text-lg tracking-wide">{step.title}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground">{step.description}</p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* Promotions */}
+      {promotions.length > 0 && (
+        <section className="bg-secondary/40 py-14 lg:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <Reveal className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="font-heading text-2xl tracking-wide sm:text-3xl">Current promotions</h2>
+                <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+                  Limited-time prices — Contact to Buy before they&apos;re gone.
+                </p>
+              </div>
+              <Button variant="outline" nativeButton={false} render={<Link href="/promotions" />}>
+                View all promotions
+              </Button>
+            </Reveal>
+            <div className="mt-8">
+              <ProductGrid jerseys={promotions} />
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
