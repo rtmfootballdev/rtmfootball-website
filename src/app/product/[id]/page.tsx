@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { JerseyImage } from "@/components/jersey/jersey-image";
+import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductConfigurator } from "@/components/product/product-configurator";
 import { TrustBadges } from "@/components/marketing/trust-badges";
 import { getJerseyById, listJerseys } from "@/lib/data/inventory";
@@ -63,11 +63,11 @@ export default async function ProductPage({
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
-        <JerseyImage
-          jersey={jersey}
-          priority
-          className="aspect-square w-full rounded-2xl border border-border"
-          sizes="(max-width: 1024px) 100vw, 50vw"
+        <ProductGallery
+          clube={jersey.clube}
+          tipo={jersey.tipo}
+          era={jersey.era}
+          fotos={jersey.fotos}
         />
         <ProductConfigurator jersey={jersey} />
       </div>

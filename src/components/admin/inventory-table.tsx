@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Upload } from "lucide-react";
+import { Plus, Trash2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,11 +16,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { JerseyImage } from "@/components/jersey/jersey-image";
 import {
   createJerseyRowAction,
+  deleteJerseyPhotoAction,
   deleteJerseyRowAction,
+  setJerseyFavoriteAction,
   updateJerseyFieldAction,
   uploadJerseyPhotoAction,
 } from "@/lib/admin/inventory-actions";
-import type { Jersey, JerseyInput } from "@/lib/types";
+import { FAVORITE_SLOTS, type FavoriteSlot, type Jersey, type JerseyInput } from "@/lib/types";
 
 export function InventoryTable({ jerseys }: { jerseys: Jersey[] }) {
   const [rows, setRows] = useState<Jersey[]>(jerseys);
@@ -60,16 +62,58 @@ export function InventoryTable({ jerseys }: { jerseys: Jersey[] }) {
     });
   }
 
-  function handleUpload(id: string, file: File) {
+  function handleUploadPhoto(id: string, file: File) {
     startTransition(async () => {
       try {
         const formData = new FormData();
         formData.append("file", file);
-        const url = await uploadJerseyPhotoAction(id, formData);
-        setRows((prev) => prev.map((r) => (r.id === id ? { ...r, fotoUrl: url } : r)));
-        toast.success("Photo uploaded.");
+        const updated = await uploadJerseyPhotoAction(id, formData);
+        setRows((prev) => prev.map((r) => (r.id === id ? updated : r)));
+        toast.success("Photo added.");
       } catch {
         toast.error("Upload failed.");
+      }
+    });
+  }
+
+  function handleDeletePhoto(id: string, url: string) {
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, fotos: r.fotos.filter((f) => f !== url) } : r))
+    );
+    startTransition(async () => {
+      try {
+        await deleteJerseyPhotoAction(id, url);
+      } catch {
+        toast.error("Could not remove that photo.");
+      }
+    });
+  }
+
+  function handleFavoriteChange(id: string, favorite: FavoriteSlot) {
+    const current = rows.find((r) => r.id === id);
+    if (!current) return;
+    const conflict =
+      favorite !== "None" ? rows.find((r) => r.id !== id && r.favorite === favorite) : null;
+
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.id === id) return { ...r, favorite };
+        if (conflict && r.id === conflict.id) return { ...r, favorite: "None" };
+        return r;
+      })
+    );
+
+    if (conflict) {
+      toast.warning(
+        `${conflict.clube} ${conflict.ano} was removed as the ${favorite} favorite — replaced by ${current.clube} ${current.ano}.`
+      );
+    }
+
+    startTransition(async () => {
+      try {
+        await setJerseyFavoriteAction(id, favorite);
+      } catch {
+        toast.error("Could not update the favorite.");
       }
     });
   }
@@ -86,10 +130,10 @@ export function InventoryTable({ jerseys }: { jerseys: Jersey[] }) {
         </Button>
       </div>
       <div className="overflow-x-auto rounded-xl border border-border">
-        <table className="w-full min-w-[1200px] border-collapse text-sm">
+        <table className="w-full min-w-[1400px] border-collapse text-sm">
           <thead className="bg-secondary/60 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="p-3">Foto</th>
+              <th className="p-3">Fotos</th>
               <th className="p-3">Clube</th>
               <th className="p-3">Ano</th>
               <th className="p-3">Era</th>
@@ -99,6 +143,7 @@ export function InventoryTable({ jerseys }: { jerseys: Jersey[] }) {
               <th className="p-3">Promoção</th>
               <th className="p-3">Preço</th>
               <th className="p-3">NovoPreço</th>
+              <th className="p-3">Favorite</th>
               <th className="p-3" />
             </tr>
           </thead>
@@ -109,12 +154,14 @@ export function InventoryTable({ jerseys }: { jerseys: Jersey[] }) {
                 jersey={jersey}
                 onPatch={(patch) => patchRow(jersey.id, patch)}
                 onDelete={() => handleDelete(jersey.id)}
-                onUpload={(file) => handleUpload(jersey.id, file)}
+                onUploadPhoto={(file) => handleUploadPhoto(jersey.id, file)}
+                onDeletePhoto={(url) => handleDeletePhoto(jersey.id, url)}
+                onFavoriteChange={(favorite) => handleFavoriteChange(jersey.id, favorite)}
               />
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={11} className="p-8 text-center text-muted-foreground">
+                <td colSpan={12} className="p-8 text-center text-muted-foreground">
                   No jerseys yet — click &quot;Add jersey&quot; to create the first one.
                 </td>
               </tr>
@@ -130,27 +177,62 @@ function InventoryRow({
   jersey,
   onPatch,
   onDelete,
-  onUpload,
+  onUploadPhoto,
+  onDeletePhoto,
+  onFavoriteChange,
 }: {
   jersey: Jersey;
   onPatch: (patch: Partial<JerseyInput>) => void;
   onDelete: () => void;
-  onUpload: (file: File) => void;
+  onUploadPhoto: (file: File) => void;
+  onDeletePhoto: (url: string) => void;
+  onFavoriteChange: (favorite: FavoriteSlot) => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <tr className="border-t border-border align-top">
       <td className="p-3">
-        <div className="h-14 w-14 overflow-hidden rounded-lg border border-border">
-          <JerseyImage jersey={jersey} className="h-full w-full" />
+        <div className="flex w-28 flex-wrap gap-1.5">
+          {jersey.fotos.length === 0 && (
+            <div className="h-9 w-9 shrink-0 overflow-hidden rounded border border-border">
+              <JerseyImage
+                clube={jersey.clube}
+                tipo={jersey.tipo}
+                era={jersey.era}
+                className="h-full w-full"
+              />
+            </div>
+          )}
+          {jersey.fotos.map((foto) => (
+            <div
+              key={foto}
+              className="group/photo relative h-9 w-9 shrink-0 overflow-hidden rounded border border-border"
+            >
+              <JerseyImage
+                clube={jersey.clube}
+                tipo={jersey.tipo}
+                era={jersey.era}
+                photoUrl={foto}
+                className="h-full w-full"
+              />
+              <button
+                type="button"
+                onClick={() => onDeletePhoto(foto)}
+                aria-label="Remove photo"
+                className="absolute inset-0 hidden items-center justify-center bg-black/60 text-white group-hover/photo:flex"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
         </div>
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline"
         >
-          <Upload className="h-3 w-3" /> Upload
+          <Upload className="h-3 w-3" /> Add photo
         </button>
         <input
           ref={fileInputRef}
@@ -159,7 +241,7 @@ function InventoryRow({
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) onUpload(file);
+            if (file) onUploadPhoto(file);
             e.target.value = "";
           }}
         />
@@ -275,6 +357,20 @@ function InventoryRow({
           }}
           className="w-24"
         />
+      </td>
+      <td className="p-3">
+        <Select value={jersey.favorite} onValueChange={(value) => onFavoriteChange(value as FavoriteSlot)}>
+          <SelectTrigger className="w-32">
+            <SelectValue>{(value: string) => value}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {FAVORITE_SLOTS.map((slot) => (
+              <SelectItem key={slot} value={slot}>
+                {slot}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </td>
       <td className="p-3">
         <Button variant="ghost" size="icon" onClick={onDelete} aria-label="Delete jersey">

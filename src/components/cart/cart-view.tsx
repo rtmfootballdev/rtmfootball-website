@@ -50,7 +50,13 @@ export function CartView() {
         <ul className="flex flex-col gap-4">
           {items.map((item) => (
             <li key={item.lineId} className="flex gap-4 rounded-xl border border-border p-4">
-              <JerseyImage jersey={item.snapshot} className="h-24 w-24 shrink-0 rounded-lg" />
+              <JerseyImage
+                clube={item.snapshot.clube}
+                tipo={item.snapshot.tipo}
+                era={item.snapshot.era}
+                photoUrl={item.snapshot.fotoUrl}
+                className="h-24 w-24 shrink-0 rounded-lg"
+              />
               <div className="flex flex-1 flex-col">
                 <div className="flex items-start justify-between gap-2">
                   <div>

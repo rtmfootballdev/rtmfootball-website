@@ -60,7 +60,7 @@ export function ProductConfigurator({ jersey }: { jersey: Jersey }) {
         ano: jersey.ano,
         era: jersey.era,
         tipo: jersey.tipo,
-        fotoUrl: jersey.fotoUrl,
+        fotoUrl: jersey.fotos[0] ?? "",
         unitPrice: price,
       },
     });

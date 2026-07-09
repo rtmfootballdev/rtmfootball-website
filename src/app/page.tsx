@@ -7,36 +7,41 @@ import { TrustBadges } from "@/components/marketing/trust-badges";
 import { Reveal } from "@/components/motion/reveal";
 import { listJerseys } from "@/lib/data/inventory";
 import { BRAND_SLOGAN, DELIVERY_MESSAGE, INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/constants";
-import type { Jersey } from "@/lib/types";
+import type { FavoriteSlot, Jersey } from "@/lib/types";
 
 const CATEGORY_SHOWCASE: Array<{
   href: string;
   label: string;
   description: string;
+  favoriteSlot: FavoriteSlot;
   filter: (jersey: Jersey) => boolean;
 }> = [
   {
     href: "/modern",
     label: "Modern",
     description: "Current-season club and national kits.",
+    favoriteSlot: "Modern",
     filter: (j) => j.era === "Atual",
   },
   {
     href: "/retro",
     label: "Retro",
     description: "Legendary kits from years past.",
+    favoriteSlot: "Retro",
     filter: (j) => j.era === "Retro",
   },
   {
     href: "/national-team",
     label: "National Team",
     description: "Represent your country, home or away.",
+    favoriteSlot: "National",
     filter: (j) => j.categoria === "Seleção",
   },
   {
     href: "/promotions",
     label: "Promotions",
     description: "Limited-time prices on selected jerseys.",
+    favoriteSlot: "Promotions",
     filter: (j) => j.promocao,
   },
 ];
@@ -118,7 +123,13 @@ export default async function HomePage() {
                 className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
                 style={{ transform: index % 2 === 1 ? "translateY(1.5rem)" : undefined }}
               >
-                <JerseyImage jersey={jersey} className="aspect-square w-full" />
+                <JerseyImage
+                  clube={jersey.clube}
+                  tipo={jersey.tipo}
+                  era={jersey.era}
+                  photoUrl={jersey.fotos[0]}
+                  className="aspect-square w-full"
+                />
               </div>
             ))}
           </Reveal>
@@ -135,7 +146,10 @@ export default async function HomePage() {
         </Reveal>
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {CATEGORY_SHOWCASE.map((category, index) => {
-            const representative = jerseys.find(category.filter) ?? fallbackJersey;
+            const representative =
+              jerseys.find((j) => j.favorite === category.favoriteSlot) ??
+              jerseys.find(category.filter) ??
+              fallbackJersey;
             return (
               <Reveal key={category.href} delay={index * 0.05}>
                 <Link
@@ -144,7 +158,10 @@ export default async function HomePage() {
                 >
                   {representative && (
                     <JerseyImage
-                      jersey={representative}
+                      clube={representative.clube}
+                      tipo={representative.tipo}
+                      era={representative.era}
+                      photoUrl={representative.fotos[0]}
                       className="absolute inset-0 h-full w-full [&>svg]:transition-transform [&>svg]:duration-500 group-hover:[&>svg]:scale-110"
                     />
                   )}

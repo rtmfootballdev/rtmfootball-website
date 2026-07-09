@@ -3,12 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/session";
 import {
+  addJerseyPhoto,
   createJersey,
   deleteJersey,
+  removeJerseyPhoto,
+  setJerseyFavorite,
   updateJersey,
-  uploadJerseyPhoto,
 } from "@/lib/data/inventory";
-import type { Jersey, JerseyInput } from "@/lib/types";
+import type { FavoriteSlot, Jersey, JerseyInput } from "@/lib/types";
 
 function revalidateCatalog() {
   revalidatePath("/", "layout");
@@ -26,7 +28,8 @@ export async function createJerseyRowAction(): Promise<Jersey> {
     promocao: false,
     preco: 0,
     novoPreco: null,
-    fotoUrl: "",
+    fotos: [],
+    favorite: "None",
   });
   revalidateCatalog();
   return jersey;
@@ -50,14 +53,36 @@ export async function deleteJerseyRowAction(id: string): Promise<void> {
 export async function uploadJerseyPhotoAction(
   id: string,
   formData: FormData
-): Promise<string> {
+): Promise<Jersey> {
   await requireAdmin();
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
     throw new Error("No file provided.");
   }
-  const url = await uploadJerseyPhoto(id, file);
-  await updateJersey(id, { fotoUrl: url });
+  const updated = await addJerseyPhoto(id, file);
+  if (!updated) {
+    throw new Error("Jersey not found.");
+  }
   revalidateCatalog();
-  return url;
+  return updated;
+}
+
+export async function deleteJerseyPhotoAction(id: string, url: string): Promise<Jersey> {
+  await requireAdmin();
+  const updated = await removeJerseyPhoto(id, url);
+  if (!updated) {
+    throw new Error("Jersey not found.");
+  }
+  revalidateCatalog();
+  return updated;
+}
+
+export async function setJerseyFavoriteAction(
+  id: string,
+  favorite: FavoriteSlot
+): Promise<{ updated: Jersey; clearedJersey: Jersey | null }> {
+  await requireAdmin();
+  const result = await setJerseyFavorite(id, favorite);
+  revalidateCatalog();
+  return result;
 }

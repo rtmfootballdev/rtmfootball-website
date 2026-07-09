@@ -14,7 +14,10 @@ export function ProductCard({ jersey }: { jersey: Jersey }) {
     >
       <div className="relative">
         <JerseyImage
-          jersey={jersey}
+          clube={jersey.clube}
+          tipo={jersey.tipo}
+          era={jersey.era}
+          photoUrl={jersey.fotos[0]}
           className="aspect-square w-full [&>svg]:transition-transform [&>svg]:duration-300 group-hover:[&>svg]:scale-[1.04]"
         />
         <div className="absolute left-3 top-3 flex flex-col gap-1.5">

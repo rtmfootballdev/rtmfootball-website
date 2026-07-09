@@ -116,7 +116,13 @@ export function SearchBar({ jerseys, className }: { jerseys: Jersey[]; className
                       onClick={() => setOpen(false)}
                       className="flex items-center gap-3 px-4 py-2 hover:bg-secondary"
                     >
-                      <JerseyImage jersey={jersey} className="h-12 w-12 shrink-0 rounded-md" />
+                      <JerseyImage
+                        clube={jersey.clube}
+                        tipo={jersey.tipo}
+                        era={jersey.era}
+                        photoUrl={jersey.fotos[0]}
+                        className="h-12 w-12 shrink-0 rounded-md"
+                      />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-medium">
                           {jersey.clube} {jersey.ano}

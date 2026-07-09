@@ -4,7 +4,7 @@ import { cache } from "react";
 import { getDb, isFirebaseConfigured } from "./firebase-admin";
 import { isCloudinaryConfigured, uploadJerseyPhotoToCloudinary } from "./cloudinary";
 import { getMockDb } from "./mock-db";
-import type { Jersey, JerseyInput } from "@/lib/types";
+import type { FavoriteSlot, Jersey, JerseyInput } from "@/lib/types";
 
 const COLLECTION = "inventory";
 
@@ -63,7 +63,7 @@ export async function deleteJersey(id: string): Promise<void> {
   }
 }
 
-export async function uploadJerseyPhoto(id: string, file: File): Promise<string> {
+async function uploadPhotoFile(id: string, file: File): Promise<string> {
   if (isCloudinaryConfigured) {
     return uploadJerseyPhotoToCloudinary(file);
   }
@@ -79,4 +79,46 @@ export async function uploadJerseyPhoto(id: string, file: File): Promise<string>
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(path.join(dir, filename), buffer);
   return `/uploads/${filename}`;
+}
+
+/** Uploads a photo file and appends it to the jersey's photo list. */
+export async function addJerseyPhoto(id: string, file: File): Promise<Jersey | null> {
+  const existing = await getJerseyById(id);
+  if (!existing) return null;
+  const url = await uploadPhotoFile(id, file);
+  return updateJersey(id, { fotos: [...existing.fotos, url] });
+}
+
+export async function removeJerseyPhoto(id: string, url: string): Promise<Jersey | null> {
+  const existing = await getJerseyById(id);
+  if (!existing) return null;
+  return updateJersey(id, { fotos: existing.fotos.filter((f) => f !== url) });
+}
+
+/**
+ * Sets a jersey's Favorite slot. Since only one jersey can hold a given slot
+ * (other than "None") at a time, this clears whichever other jersey
+ * currently holds it first. Returns the cleared jersey (if any) so the
+ * caller can surface a warning about the side effect.
+ */
+export async function setJerseyFavorite(
+  id: string,
+  favorite: FavoriteSlot
+): Promise<{ updated: Jersey; clearedJersey: Jersey | null }> {
+  let clearedJersey: Jersey | null = null;
+
+  if (favorite !== "None") {
+    const all = await listJerseys();
+    const conflict = all.find((j) => j.id !== id && j.favorite === favorite);
+    if (conflict) {
+      clearedJersey = await updateJersey(conflict.id, { favorite: "None" });
+    }
+  }
+
+  const updated = await updateJersey(id, { favorite });
+  if (!updated) {
+    throw new Error("Jersey not found.");
+  }
+
+  return { updated, clearedJersey };
 }

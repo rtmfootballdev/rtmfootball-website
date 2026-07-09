@@ -6,6 +6,17 @@ export type Size = "S" | "M" | "L" | "XL" | "XXL";
 
 export const SIZES: Size[] = ["S", "M", "L", "XL", "XXL"];
 
+/** Which "shop by category" box on the home page a jersey's first photo represents. */
+export type FavoriteSlot = "None" | "Modern" | "Retro" | "National" | "Promotions";
+
+export const FAVORITE_SLOTS: FavoriteSlot[] = [
+  "None",
+  "Modern",
+  "Retro",
+  "National",
+  "Promotions",
+];
+
 export interface Jersey {
   id: string;
   clube: string;
@@ -17,7 +28,8 @@ export interface Jersey {
   promocao: boolean;
   preco: number;
   novoPreco: number | null;
-  fotoUrl: string;
+  fotos: string[];
+  favorite: FavoriteSlot;
   createdAt: number;
   updatedAt: number;
 }
