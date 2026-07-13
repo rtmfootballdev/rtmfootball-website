@@ -2,9 +2,12 @@ import Link from "next/link";
 import { JerseyImage } from "@/components/jersey/jersey-image";
 import { Badge } from "@/components/ui/badge";
 import { basePrice, formatEUR, hasDiscount } from "@/lib/pricing";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { tipoLabel, categoriaLabel } from "@/lib/i18n/labels";
 import type { Jersey } from "@/lib/types";
 
-export function ProductCard({ jersey }: { jersey: Jersey }) {
+export async function ProductCard({ jersey }: { jersey: Jersey }) {
+  const { locale, dict } = await getDictionary();
   const discounted = hasDiscount(jersey);
 
   return (
@@ -22,13 +25,15 @@ export function ProductCard({ jersey }: { jersey: Jersey }) {
         />
         <div className="absolute left-3 top-3 flex flex-col gap-1.5">
           {jersey.promocao && (
-            <Badge className="border-transparent bg-gold text-gold-foreground">Promotion</Badge>
+            <Badge className="border-transparent bg-gold text-gold-foreground">
+              {dict.product.promotionBadge}
+            </Badge>
           )}
           {jersey.era === "Retro" && <Badge variant="secondary">Retro</Badge>}
         </div>
         {jersey.disponibilidade !== "Confirmado" && (
           <div className="absolute inset-x-0 bottom-0 bg-pitch/90 px-3 py-1.5 text-center text-[11px] font-medium text-pitch-foreground">
-            Confirm availability
+            {dict.product.confirmAvailabilityBadge}
           </div>
         )}
       </div>
@@ -37,7 +42,7 @@ export function ProductCard({ jersey }: { jersey: Jersey }) {
           {jersey.clube} {jersey.ano}
         </p>
         <p className="text-xs text-muted-foreground">
-          {jersey.tipo} · {jersey.categoria}
+          {tipoLabel(jersey.tipo, locale)} · {categoriaLabel(jersey.categoria, locale)}
         </p>
         <div className="mt-auto flex items-baseline gap-2 pt-2">
           {discounted && (

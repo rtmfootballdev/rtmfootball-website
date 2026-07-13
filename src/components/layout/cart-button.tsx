@@ -4,8 +4,10 @@ import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/lib/cart/store";
+import { useLocale } from "@/lib/i18n/locale-provider";
 
 export function CartButton() {
+  const { dict } = useLocale();
   const count = useCartStore((s) => s.items.length);
 
   return (
@@ -14,7 +16,7 @@ export function CartButton() {
       size="icon"
       className="relative"
       nativeButton={false}
-      render={<Link href="/cart" aria-label="View cart" />}
+      render={<Link href="/cart" aria-label={dict.header.viewCartAriaLabel} />}
     >
       <ShoppingBag />
       {count > 0 && (

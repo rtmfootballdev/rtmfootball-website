@@ -4,8 +4,12 @@ import { CategoryFilters } from "@/components/product/category-filters";
 import { ProductGrid } from "@/components/product/product-grid";
 import { listJerseys } from "@/lib/data/inventory";
 import { filterAndSortJerseys, type CatalogSearchParams } from "@/lib/catalog-filters";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
-export const metadata: Metadata = { title: "National Team Jerseys" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { dict } = await getDictionary();
+  return { title: dict.categoryPages.nationalTeam.metaTitle };
+}
 
 export default async function NationalTeamPage({
   searchParams,
@@ -13,7 +17,7 @@ export default async function NationalTeamPage({
   searchParams: Promise<CatalogSearchParams>;
 }) {
   const params = await searchParams;
-  const jerseys = await listJerseys();
+  const [jerseys, { dict }] = await Promise.all([listJerseys(), getDictionary()]);
   const filtered = filterAndSortJerseys(
     jerseys.filter((j) => j.categoria === "Seleção"),
     params
@@ -22,18 +26,15 @@ export default async function NationalTeamPage({
   return (
     <div>
       <CategoryPageHeader
-        title="National Team"
-        description="Represent your country, home or away, modern or retro."
+        title={dict.nav.nationalTeam}
+        description={dict.categoryPages.nationalTeam.description}
         count={filtered.length}
       />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <div className="mb-6 flex justify-end">
           <CategoryFilters basePath="/national-team" showEraFilter />
         </div>
-        <ProductGrid
-          jerseys={filtered}
-          emptyMessage="No national team jerseys match these filters yet."
-        />
+        <ProductGrid jerseys={filtered} emptyMessage={dict.categoryPages.nationalTeam.empty} />
       </div>
     </div>
   );

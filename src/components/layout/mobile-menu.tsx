@@ -14,8 +14,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SearchBar } from "@/components/search/search-bar";
-import { BRAND_SLOGAN, INSTAGRAM_HANDLE, INSTAGRAM_URL, NAV_LINKS } from "@/lib/constants";
+import { LanguagePicker } from "./language-picker";
+import { BRAND_NAME, BRAND_SLOGAN, INSTAGRAM_HANDLE, INSTAGRAM_URL, NAV_LINKS } from "@/lib/constants";
 import { logoutAction } from "@/lib/auth/actions";
+import { useLocale } from "@/lib/i18n/locale-provider";
 import type { Jersey, PublicUser } from "@/lib/types";
 
 const navItemClass =
@@ -24,19 +26,27 @@ const utilItemClass =
   "block w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-foreground hover:bg-secondary";
 
 export function MobileMenu({ jerseys, user }: { jerseys: Jersey[]; user: PublicUser | null }) {
+  const { dict } = useLocale();
+
   return (
     <Sheet>
       <SheetTrigger
         render={
-          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            aria-label={dict.header.openMenuAriaLabel}
+          />
         }
       >
         <Menu />
       </SheetTrigger>
       <SheetContent side="right" className="flex w-[85vw] flex-col gap-0 p-0">
         <SheetHeader className="border-b border-border pb-4">
-          <SheetTitle>RTM Football</SheetTitle>
+          <SheetTitle>{BRAND_NAME}</SheetTitle>
           <p className="text-xs text-muted-foreground">{BRAND_SLOGAN}</p>
+          <LanguagePicker className="mt-1" />
         </SheetHeader>
 
         <div className="p-4">
@@ -50,7 +60,7 @@ export function MobileMenu({ jerseys, user }: { jerseys: Jersey[]; user: PublicU
               nativeButton={false}
               render={<Link href={link.href} className={navItemClass} />}
             >
-              {link.label}
+              {dict.nav[link.key]}
             </SheetClose>
           ))}
         </nav>
@@ -64,7 +74,10 @@ export function MobileMenu({ jerseys, user }: { jerseys: Jersey[]; user: PublicU
                 nativeButton={false}
                 render={<Link href="/account" className={utilItemClass} />}
               >
-                My Account · <span className="text-gold">★ {user.points} pts</span>
+                {dict.account.myAccount} ·{" "}
+                <span className="text-gold">
+                  ★ {user.points} {dict.account.pts}
+                </span>
               </SheetClose>
               {user.isAdmin && (
                 <>
@@ -91,7 +104,7 @@ export function MobileMenu({ jerseys, user }: { jerseys: Jersey[]; user: PublicU
                     />
                   }
                 >
-                  Log out
+                  {dict.auth.logout}
                 </SheetClose>
               </form>
             </>
@@ -101,13 +114,13 @@ export function MobileMenu({ jerseys, user }: { jerseys: Jersey[]; user: PublicU
                 nativeButton={false}
                 render={<Link href="/login" className={utilItemClass} />}
               >
-                Log in
+                {dict.auth.login}
               </SheetClose>
               <SheetClose
                 nativeButton={false}
                 render={<Link href="/register" className={utilItemClass} />}
               >
-                Sign up
+                {dict.auth.signup}
               </SheetClose>
             </>
           )}

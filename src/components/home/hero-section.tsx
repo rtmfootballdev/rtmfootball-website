@@ -2,8 +2,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/motion/reveal";
 import { HeroBackgroundCarousel } from "@/components/home/hero-background-carousel";
+import { BRAND_NAME } from "@/lib/constants";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
-export function HeroSection() {
+export async function HeroSection() {
+  const { dict } = await getDictionary();
+
   return (
     <section className="relative flex h-[85vh] max-h-[880px] min-h-[560px] items-end overflow-hidden text-white sm:items-center">
       <HeroBackgroundCarousel />
@@ -11,7 +15,7 @@ export function HeroSection() {
       <div className="relative mx-auto w-full max-w-3xl px-4 pb-20 text-center sm:px-6 sm:pb-0">
         <Reveal>
           <p className="text-xs font-semibold tracking-[0.25em] text-gold uppercase">
-            RTM Football
+            {BRAND_NAME}
           </p>
           <h1 className="mt-4 font-heading text-4xl leading-[1.05] tracking-tight text-balance drop-shadow-lg sm:text-5xl lg:text-6xl">
             More than just a jersey.
@@ -27,7 +31,7 @@ export function HeroSection() {
               nativeButton={false}
               render={<Link href="/promotions" />}
             >
-              Shop Promotions
+              {dict.hero.shopPromotions}
             </Button>
             <Button
               size="lg"
@@ -36,7 +40,7 @@ export function HeroSection() {
               nativeButton={false}
               render={<Link href="/modern" />}
             >
-              Explore Collection
+              {dict.hero.exploreCollection}
             </Button>
           </div>
         </Reveal>

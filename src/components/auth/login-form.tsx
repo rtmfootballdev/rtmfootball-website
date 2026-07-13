@@ -6,14 +6,16 @@ import { loginAction } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLocale } from "@/lib/i18n/locale-provider";
 
 export function LoginForm() {
+  const { dict } = useLocale();
   const [state, formAction, pending] = useActionState(loginAction, undefined);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div>
-        <Label htmlFor="username">Username</Label>
+        <Label htmlFor="username">{dict.auth.username}</Label>
         <Input
           id="username"
           name="username"
@@ -23,7 +25,7 @@ export function LoginForm() {
         />
       </div>
       <div>
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{dict.auth.password}</Label>
         <Input
           id="password"
           name="password"
@@ -35,12 +37,12 @@ export function LoginForm() {
       </div>
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
       <Button type="submit" size="lg" disabled={pending} className="mt-2">
-        {pending ? "Logging in…" : "Log in"}
+        {pending ? dict.auth.loggingIn : dict.auth.login}
       </Button>
       <p className="text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{" "}
+        {dict.auth.noAccount}{" "}
         <Link href="/register" className="font-medium text-primary hover:underline">
-          Sign up
+          {dict.auth.signup}
         </Link>
       </p>
     </form>

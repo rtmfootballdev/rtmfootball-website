@@ -13,14 +13,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { logoutAction } from "@/lib/auth/actions";
+import { useLocale } from "@/lib/i18n/locale-provider";
 import type { PublicUser } from "@/lib/types";
 
 export function AccountMenu({ user }: { user: PublicUser | null }) {
+  const { dict } = useLocale();
+
   if (!user) {
     return (
       <div className="flex items-center gap-1">
         <Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/login" />}>
-          Log in
+          {dict.auth.login}
         </Button>
         <Button
           size="sm"
@@ -28,7 +31,7 @@ export function AccountMenu({ user }: { user: PublicUser | null }) {
           nativeButton={false}
           render={<Link href="/register" />}
         >
-          Sign up
+          {dict.auth.signup}
         </Button>
       </div>
     );
@@ -44,29 +47,31 @@ export function AccountMenu({ user }: { user: PublicUser | null }) {
             </span>
             <span className="hidden flex-col items-start leading-tight sm:flex">
               <span className="text-xs font-medium">{user.username}</span>
-              <span className="text-[11px] font-semibold text-gold">★ {user.points} pts</span>
+              <span className="text-[11px] font-semibold text-gold">
+                ★ {user.points} {dict.account.pts}
+              </span>
             </span>
           </Button>
         }
       />
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Signed in as {user.username}</DropdownMenuLabel>
+          <DropdownMenuLabel>{dict.account.signedInAs(user.username)}</DropdownMenuLabel>
           <p className="px-1.5 pb-1.5 text-xs text-muted-foreground">
-            ★ {user.points} points accumulated
+            {dict.account.pointsAccumulated(user.points)}
           </p>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem render={<Link href="/account" />}>
-            <User /> My Account
+            <User /> {dict.account.myAccount}
           </DropdownMenuItem>
         </DropdownMenuGroup>
         {user.isAdmin && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuLabel>Admin</DropdownMenuLabel>
+              <DropdownMenuLabel>{dict.account.adminHeading}</DropdownMenuLabel>
               <DropdownMenuItem render={<Link href="/admin/inventario" />}>
                 <Settings2 /> Inventário
               </DropdownMenuItem>
@@ -84,7 +89,7 @@ export function AccountMenu({ user }: { user: PublicUser | null }) {
               nativeButton
               render={<button type="submit" className="w-full" />}
             >
-              <LogOut /> Log out
+              <LogOut /> {dict.auth.logout}
             </DropdownMenuItem>
           </form>
         </DropdownMenuGroup>

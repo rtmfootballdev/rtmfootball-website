@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { JerseyArt } from "@/components/jersey/jersey-art";
+import { useLocale } from "@/lib/i18n/locale-provider";
 import type { Era, Tipo } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ export function ProductGallery({
   fotos: string[];
   className?: string;
 }) {
+  const { dict } = useLocale();
   const [index, setIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const touchStartX = useRef<number | null>(null);
@@ -60,12 +62,12 @@ export function ProductGallery({
           <button
             type="button"
             onClick={() => setLightboxOpen(true)}
-            aria-label="View full-size photo"
+            aria-label={dict.gallery.viewFullSizeAriaLabel}
             className="absolute inset-0 cursor-zoom-in"
           >
             <Image
               src={fotos[index]}
-              alt={`${clube} jersey — photo ${index + 1} of ${count}`}
+              alt={dict.gallery.photoAlt(clube, index + 1, count)}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
@@ -81,7 +83,7 @@ export function ProductGallery({
             <button
               type="button"
               onClick={goPrev}
-              aria-label="Previous photo"
+              aria-label={dict.gallery.previousPhotoAriaLabel}
               className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground shadow transition-colors hover:bg-background"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -89,7 +91,7 @@ export function ProductGallery({
             <button
               type="button"
               onClick={goNext}
-              aria-label="Next photo"
+              aria-label={dict.gallery.nextPhotoAriaLabel}
               className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground shadow transition-colors hover:bg-background"
             >
               <ChevronRight className="h-5 w-5" />
@@ -100,7 +102,7 @@ export function ProductGallery({
                   key={foto}
                   type="button"
                   onClick={() => setIndex(i)}
-                  aria-label={`Go to photo ${i + 1}`}
+                  aria-label={dict.gallery.goToPhotoAriaLabel(i + 1)}
                   className={cn(
                     "h-1.5 rounded-full transition-all",
                     i === index ? "w-5 bg-gold" : "w-1.5 bg-background/80"
@@ -115,7 +117,7 @@ export function ProductGallery({
           <button
             type="button"
             onClick={() => setLightboxOpen(true)}
-            aria-label="Expand photo"
+            aria-label={dict.gallery.expandPhotoAriaLabel}
             className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-background/85 text-foreground opacity-0 shadow transition-opacity group-hover:opacity-100"
           >
             <Expand className="h-4 w-4" />
@@ -130,7 +132,7 @@ export function ProductGallery({
               key={foto}
               type="button"
               onClick={() => setIndex(i)}
-              aria-label={`Show photo ${i + 1}`}
+              aria-label={dict.gallery.showPhotoAriaLabel(i + 1)}
               className={cn(
                 "relative aspect-square overflow-hidden rounded-lg border-2 transition-colors",
                 i === index ? "border-primary" : "border-transparent hover:border-border"
@@ -149,7 +151,7 @@ export function ProductGallery({
             className="max-w-[95vw] border-none bg-transparent p-0 shadow-none ring-0 sm:max-w-[90vw]"
           >
             <DialogTitle className="sr-only">
-              {clube} jersey — photo {index + 1} of {count}
+              {dict.gallery.photoAlt(clube, index + 1, count)}
             </DialogTitle>
             <div
               className="relative flex h-[80vh] w-full items-center justify-center"
@@ -158,7 +160,7 @@ export function ProductGallery({
             >
               <Image
                 src={fotos[index]}
-                alt={`${clube} jersey — photo ${index + 1} of ${count}`}
+                alt={dict.gallery.photoAlt(clube, index + 1, count)}
                 fill
                 sizes="95vw"
                 className="object-contain"
@@ -168,7 +170,7 @@ export function ProductGallery({
                   <button
                     type="button"
                     onClick={goPrev}
-                    aria-label="Previous photo"
+                    aria-label={dict.gallery.previousPhotoAriaLabel}
                     className="absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground shadow hover:bg-background"
                   >
                     <ChevronLeft className="h-5 w-5" />
@@ -176,7 +178,7 @@ export function ProductGallery({
                   <button
                     type="button"
                     onClick={goNext}
-                    aria-label="Next photo"
+                    aria-label={dict.gallery.nextPhotoAriaLabel}
                     className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground shadow hover:bg-background"
                   >
                     <ChevronRight className="h-5 w-5" />

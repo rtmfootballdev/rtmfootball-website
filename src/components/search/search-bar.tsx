@@ -8,12 +8,15 @@ import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { JerseyImage } from "@/components/jersey/jersey-image";
 import { basePrice, formatEUR } from "@/lib/pricing";
+import { useLocale } from "@/lib/i18n/locale-provider";
+import { tipoLabel, eraLabel } from "@/lib/i18n/labels";
 import type { Jersey } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const MAX_PREVIEW_RESULTS = 5;
 
 export function SearchBar({ jerseys, className }: { jerseys: Jersey[]; className?: string }) {
+  const { locale, dict } = useLocale();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
@@ -81,8 +84,8 @@ export function SearchBar({ jerseys, className }: { jerseys: Jersey[]; className
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
-          placeholder="Search by club, year, home or away…"
-          aria-label="Search jerseys"
+          placeholder={dict.header.searchPlaceholder}
+          aria-label={dict.header.searchAriaLabel}
           className="h-11 rounded-full border-border bg-background pl-9 pr-9 shadow-sm"
         />
         {query && (
@@ -92,7 +95,7 @@ export function SearchBar({ jerseys, className }: { jerseys: Jersey[]; className
               setQuery("");
               setOpen(false);
             }}
-            aria-label="Clear search"
+            aria-label={dict.header.searchClearAriaLabel}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           >
             <X className="h-4 w-4" />
@@ -104,7 +107,7 @@ export function SearchBar({ jerseys, className }: { jerseys: Jersey[]; className
         <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 overflow-hidden rounded-xl border border-border bg-popover shadow-lg">
           {results.length === 0 ? (
             <p className="px-4 py-6 text-center text-sm text-muted-foreground">
-              No jerseys found for “{query}”.
+              {dict.header.searchNoResults(query)}
             </p>
           ) : (
             <>
@@ -128,7 +131,7 @@ export function SearchBar({ jerseys, className }: { jerseys: Jersey[]; className
                           {jersey.clube} {jersey.ano}
                         </span>
                         <span className="block text-xs text-muted-foreground">
-                          {jersey.tipo} · {jersey.era}
+                          {tipoLabel(jersey.tipo, locale)} · {eraLabel(jersey.era, locale)}
                         </span>
                       </span>
                       <span className="shrink-0 text-sm font-semibold text-primary">
@@ -144,7 +147,7 @@ export function SearchBar({ jerseys, className }: { jerseys: Jersey[]; className
                   onClick={goToFullResults}
                   className="w-full border-t border-border bg-secondary/60 px-4 py-2.5 text-sm font-medium text-primary hover:bg-secondary"
                 >
-                  View all {results.length} results
+                  {dict.header.searchViewAllResults(results.length)}
                 </button>
               )}
             </>

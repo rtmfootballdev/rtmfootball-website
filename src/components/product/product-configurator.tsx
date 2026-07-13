@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { MessageCircle, ShoppingBag } from "lucide-react";
+import { MessageCircle, ShoppingBag, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,11 +11,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useCartStore } from "@/lib/cart/store";
 import { basePrice, formatEUR, hasDiscount, jerseyNeedsConfirmation } from "@/lib/pricing";
 import { buildProductWhatsAppLink } from "@/lib/whatsapp";
-import { AVAILABILITY_CONFIRM_MESSAGE, PERSONALIZATION_FEE } from "@/lib/constants";
+import { PERSONALIZATION_FEE } from "@/lib/constants";
+import { useLocale } from "@/lib/i18n/locale-provider";
+import { tipoLabel, categoriaLabel, eraLabel } from "@/lib/i18n/labels";
 import { SIZES, type Jersey, type Size } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function ProductConfigurator({ jersey }: { jersey: Jersey }) {
+  const { locale, dict } = useLocale();
   const [size, setSize] = useState<Size | null>(null);
   const [personalize, setPersonalize] = useState(false);
   const [name, setName] = useState("");
@@ -43,12 +46,14 @@ export function ProductConfigurator({ jersey }: { jersey: Jersey }) {
         personalization,
         unitPrice: total,
         needsConfirmation,
+        locale,
+        dict,
       })
     : null;
 
   function handleAddToCart() {
     if (!size) {
-      toast.error("Please select a size first.");
+      toast.error(dict.product.toastSelectSize);
       return;
     }
     addItem({
@@ -64,14 +69,15 @@ export function ProductConfigurator({ jersey }: { jersey: Jersey }) {
         unitPrice: price,
       },
     });
-    toast.success(`${jersey.clube} ${jersey.ano} added to cart.`);
+    toast.success(dict.product.toastAddedToCart(jersey.clube, jersey.ano));
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <p className="text-sm font-medium text-muted-foreground">
-          {jersey.tipo} · {jersey.categoria} · {jersey.era === "Retro" ? "Retro" : "Modern"}
+          {tipoLabel(jersey.tipo, locale)} · {categoriaLabel(jersey.categoria, locale)} ·{" "}
+          {eraLabel(jersey.era, locale)}
         </p>
         <h1 className="font-heading text-3xl tracking-wide sm:text-4xl">
           {jersey.clube} {jersey.ano}
@@ -85,7 +91,7 @@ export function ProductConfigurator({ jersey }: { jersey: Jersey }) {
           <span className="text-2xl font-semibold text-primary">{formatEUR(price)}</span>
           {discounted && (
             <span className="rounded-full bg-gold px-2 py-0.5 text-xs font-semibold text-gold-foreground">
-              Promotion
+              {dict.product.promotionBadge}
             </span>
           )}
         </div>
@@ -93,7 +99,7 @@ export function ProductConfigurator({ jersey }: { jersey: Jersey }) {
 
       {/* Size selector */}
       <div>
-        <p className="text-sm font-medium">Size</p>
+        <p className="text-sm font-medium">{dict.product.sizeLabel}</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {SIZES.map((s) => (
             <button
@@ -114,9 +120,9 @@ export function ProductConfigurator({ jersey }: { jersey: Jersey }) {
         <p className="mt-2 text-xs text-muted-foreground">
           {size
             ? needsConfirmation
-              ? AVAILABILITY_CONFIRM_MESSAGE
-              : "This size is confirmed in stock."
-            : "XXL and any jersey pending confirmation require us to confirm stock first (usually less than 24h)."}
+              ? dict.availability.confirmMessage
+              : dict.product.sizeConfirmedInStock
+            : dict.product.sizeHintDefault}
         </p>
       </div>
 
@@ -129,32 +135,32 @@ export function ProductConfigurator({ jersey }: { jersey: Jersey }) {
             onCheckedChange={(checked) => setPersonalize(checked === true)}
           />
           <Label htmlFor="personalize" className="text-sm font-medium">
-            Add name &amp; number (+{formatEUR(PERSONALIZATION_FEE)})
+            {dict.product.personalizeLabel(formatEUR(PERSONALIZATION_FEE))}
           </Label>
         </div>
         {personalize && (
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="custom-name" className="text-xs text-muted-foreground">
-                Name
+                {dict.product.nameLabel}
               </Label>
               <Input
                 id="custom-name"
                 value={name}
                 onChange={(e) => setName(e.target.value.toUpperCase().slice(0, 15))}
-                placeholder="e.g. RONALDO"
+                placeholder={dict.product.namePlaceholder}
                 className="mt-1 uppercase"
               />
             </div>
             <div>
               <Label htmlFor="custom-number" className="text-xs text-muted-foreground">
-                Number
+                {dict.product.numberLabel}
               </Label>
               <Input
                 id="custom-number"
                 value={number}
                 onChange={(e) => setNumber(e.target.value.replace(/[^0-9]/g, "").slice(0, 2))}
-                placeholder="e.g. 7"
+                placeholder={dict.product.numberPlaceholder}
                 inputMode="numeric"
                 className="mt-1"
               />
@@ -166,7 +172,7 @@ export function ProductConfigurator({ jersey }: { jersey: Jersey }) {
       {/* Actions */}
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button size="lg" variant="outline" className="flex-1 gap-2" onClick={handleAddToCart}>
-          <ShoppingBag className="h-4 w-4" /> Add to Cart
+          <ShoppingBag className="h-4 w-4" /> {dict.product.addToCart}
         </Button>
         {whatsappLink ? (
           <Button
@@ -176,20 +182,23 @@ export function ProductConfigurator({ jersey }: { jersey: Jersey }) {
             render={<a href={whatsappLink} target="_blank" rel="noreferrer" />}
           >
             <MessageCircle className="h-4 w-4" />
-            {needsConfirmation ? "Contact us to Confirm Availability" : "Contact to Buy"}
+            {needsConfirmation ? dict.product.contactConfirmAvailability : dict.product.contactToBuy}
           </Button>
         ) : (
           <Button size="lg" className="flex-1 gap-2" disabled>
-            <MessageCircle className="h-4 w-4" /> Select a size to continue
+            <MessageCircle className="h-4 w-4" /> {dict.product.selectSizeToContinue}
           </Button>
         )}
       </div>
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Truck className="h-3.5 w-3.5 shrink-0" /> {dict.delivery.mailFee}
+      </p>
       <p className="text-xs text-muted-foreground">
-        Prefer to browse a bit more?{" "}
+        {dict.product.cartHintPrefix}{" "}
         <Link href="/cart" className="font-medium text-primary hover:underline">
-          View your cart
+          {dict.product.cartHintLink}
         </Link>{" "}
-        anytime — everything you add is saved for your WhatsApp order.
+        {dict.product.cartHintSuffix}
       </p>
     </div>
   );

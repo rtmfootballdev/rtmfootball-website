@@ -36,7 +36,7 @@ export async function createUser(username: string, password: string): Promise<Us
   const key = normalize(trimmed);
   const existing = await getUserByUsername(key);
   if (existing) {
-    throw new Error("That username is already taken.");
+    throw new Error("USERNAME_TAKEN");
   }
 
   const record: UserRecord = {

@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import Fuse from "fuse.js";
 import { ProductGrid } from "@/components/product/product-grid";
 import { listJerseys } from "@/lib/data/inventory";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
-export const metadata: Metadata = { title: "Search results" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { dict } = await getDictionary();
+  return { title: dict.search.metaTitle };
+}
 
 export default async function SearchPage({
   searchParams,
@@ -12,7 +16,7 @@ export default async function SearchPage({
 }) {
   const { q } = await searchParams;
   const query = (q ?? "").trim();
-  const jerseys = await listJerseys();
+  const [jerseys, { dict }] = await Promise.all([listJerseys(), getDictionary()]);
 
   let results = jerseys;
   if (query) {
@@ -32,18 +36,16 @@ export default async function SearchPage({
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <h1 className="font-heading text-2xl tracking-wide">
-        {query ? `Search results for “${query}”` : "Search"}
+        {query ? dict.search.resultsFor(query) : dict.search.title}
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        {results.length} jersey{results.length === 1 ? "" : "s"} found
+        {dict.search.jerseysFound(results.length)}
       </p>
       <div className="mt-8">
         <ProductGrid
           jerseys={results}
           emptyMessage={
-            query
-              ? `No jerseys found for “${query}”. Try a different club, year or type.`
-              : "Start typing in the search bar above to find a jersey."
+            query ? dict.search.noResultsDetailed(query) : dict.search.promptStart
           }
         />
       </div>

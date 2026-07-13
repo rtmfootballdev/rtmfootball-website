@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import { AuthCard } from "@/components/auth/auth-card";
 import { LoginForm } from "@/components/auth/login-form";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
-export const metadata: Metadata = { title: "Log in" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { dict } = await getDictionary();
+  return { title: dict.auth.loginMetaTitle };
+}
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const { dict } = await getDictionary();
   return (
-    <AuthCard title="Welcome back" description="Log in to see your points and account.">
+    <AuthCard title={dict.auth.loginTitle} description={dict.auth.loginDescription}>
       <LoginForm />
     </AuthCard>
   );

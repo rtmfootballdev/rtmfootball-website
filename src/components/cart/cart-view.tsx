@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { MessageCircle, Trash2 } from "lucide-react";
+import { MessageCircle, Trash2, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { JerseyImage } from "@/components/jersey/jersey-image";
 import { useCartStore } from "@/lib/cart/store";
 import { cartLineTotal, formatEUR } from "@/lib/pricing";
 import { buildCartWhatsAppLink } from "@/lib/whatsapp";
-import { DELIVERY_MESSAGE, PERSONALIZATION_FEE } from "@/lib/constants";
+import { PERSONALIZATION_FEE } from "@/lib/constants";
+import { useLocale } from "@/lib/i18n/locale-provider";
+import { tipoLabel } from "@/lib/i18n/labels";
 
 export function CartView() {
+  const { locale, dict } = useLocale();
   const items = useCartStore((s) => s.items);
   const removeItem = useCartStore((s) => s.removeItem);
   const clear = useCartStore((s) => s.clear);
@@ -17,18 +20,20 @@ export function CartView() {
   const total = items.reduce((sum, item) => sum + cartLineTotal(item), 0);
   const whatsappLink =
     items.length > 0
-      ? buildCartWhatsAppLink(items.map((item) => ({ item, jersey: null })))
+      ? buildCartWhatsAppLink(
+          items.map((item) => ({ item, jersey: null })),
+          locale,
+          dict
+        )
       : null;
 
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center sm:px-6">
-        <h1 className="font-heading text-3xl tracking-wide">Your cart is empty</h1>
-        <p className="mt-3 text-muted-foreground">
-          Browse our jerseys and add your favorites — they&apos;ll show up here.
-        </p>
+        <h1 className="font-heading text-3xl tracking-wide">{dict.cart.emptyTitle}</h1>
+        <p className="mt-3 text-muted-foreground">{dict.cart.emptyDescription}</p>
         <Button className="mt-6" nativeButton={false} render={<Link href="/modern" />}>
-          Start shopping
+          {dict.cart.startShopping}
         </Button>
       </div>
     );
@@ -37,12 +42,9 @@ export function CartView() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-heading text-3xl tracking-wide">Your Cart</h1>
-        <button
-          onClick={clear}
-          className="text-sm text-muted-foreground hover:text-destructive"
-        >
-          Clear cart
+        <h1 className="font-heading text-3xl tracking-wide">{dict.cart.title}</h1>
+        <button onClick={clear} className="text-sm text-muted-foreground hover:text-destructive">
+          {dict.cart.clearCart}
         </button>
       </div>
 
@@ -64,12 +66,13 @@ export function CartView() {
                       {item.snapshot.clube} {item.snapshot.ano}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {item.snapshot.tipo} · Size {item.size}
+                      {tipoLabel(item.snapshot.tipo, locale)} · {dict.product.sizeLabel}{" "}
+                      {item.size}
                     </p>
                   </div>
                   <button
                     onClick={() => removeItem(item.lineId)}
-                    aria-label="Remove item"
+                    aria-label={dict.cart.removeItemAriaLabel}
                     className="shrink-0 text-muted-foreground hover:text-destructive"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -77,15 +80,17 @@ export function CartView() {
                 </div>
                 {item.personalization && (
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Name: {item.personalization.name || "—"} / Number:{" "}
-                    {item.personalization.number || "—"}
+                    {dict.cart.nameNumberLine(
+                      item.personalization.name,
+                      item.personalization.number
+                    )}
                   </p>
                 )}
                 <p className="mt-auto pt-2 text-sm font-semibold text-primary">
                   {formatEUR(cartLineTotal(item))}
                   {item.personalization && (
                     <span className="ml-1 text-xs font-normal text-muted-foreground">
-                      (incl. +{formatEUR(PERSONALIZATION_FEE)} personalization)
+                      {dict.cart.personalizationIncl(formatEUR(PERSONALIZATION_FEE))}
                     </span>
                   )}
                 </p>
@@ -95,11 +100,9 @@ export function CartView() {
         </ul>
 
         <div className="h-fit rounded-xl border border-border bg-secondary/40 p-6">
-          <h2 className="font-heading text-lg tracking-wide">Order summary</h2>
+          <h2 className="font-heading text-lg tracking-wide">{dict.cart.orderSummary}</h2>
           <div className="mt-4 flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
-              {items.length} item{items.length === 1 ? "" : "s"}
-            </span>
+            <span className="text-muted-foreground">{dict.cart.itemCount(items.length)}</span>
             <span className="font-semibold">{formatEUR(total)}</span>
           </div>
           {whatsappLink && (
@@ -109,10 +112,13 @@ export function CartView() {
               nativeButton={false}
               render={<a href={whatsappLink} target="_blank" rel="noreferrer" />}
             >
-              <MessageCircle className="h-4 w-4" /> Contact to Buy
+              <MessageCircle className="h-4 w-4" /> {dict.product.contactToBuy}
             </Button>
           )}
-          <p className="mt-4 text-xs text-muted-foreground">{DELIVERY_MESSAGE}</p>
+          <p className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Truck className="h-3.5 w-3.5 shrink-0" /> {dict.delivery.mailFee}
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">{dict.delivery.message}</p>
         </div>
       </div>
     </div>

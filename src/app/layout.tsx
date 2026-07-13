@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { LocaleProvider } from "@/lib/i18n/locale-provider";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -42,23 +44,27 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { locale } = await getDictionary();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${inter.variable} ${oswald.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <TooltipProvider delay={150}>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <Toaster position="bottom-center" richColors closeButton />
-        </TooltipProvider>
+        <LocaleProvider locale={locale}>
+          <TooltipProvider delay={150}>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <Toaster position="bottom-center" richColors closeButton />
+          </TooltipProvider>
+        </LocaleProvider>
       </body>
     </html>
   );
