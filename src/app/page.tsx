@@ -72,7 +72,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <HeroSection jerseys={jerseys} />
+      <HeroSection />
 
       {/* Category showcase */}
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-20">
